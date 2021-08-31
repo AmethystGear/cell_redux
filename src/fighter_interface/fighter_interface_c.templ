@@ -1,0 +1,33 @@
+@0
+#include <string.h>
+#include "../utility/utils.h"
+#include "fighter_interface.h"
+
+typedef void (*CellReduxFunction)();
+
+typedef struct FunctionNameToCellReduxFunction {
+    char* function_name;
+    CellReduxFunction cell_redux_fn;
+} FunctionNameToCellReduxFunction;
+
+FunctionNameToCellReduxFunction function_mapping[] = {
+@1
+};
+
+char* fighters[] = {
+@2
+};
+
+void call_function_with_name(char* name) {
+    for (int i = 0; i < ARRAY_LEN(function_mapping); i++) {
+        if (strcmp(function_mapping[i].function_name, name) == 0) {
+            function_mapping[i].cell_redux_fn();
+        }
+    }
+    fail_on(ERR(FUNCTION_DOES_NOT_EXIST));
+}
+
+char** get_fighters(int* len) {
+    *len = ARRAY_LEN(fighters);
+    return fighters;
+}
