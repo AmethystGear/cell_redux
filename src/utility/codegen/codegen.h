@@ -6,9 +6,9 @@
  * overriting the file with name out_file_name with the full expansion. As a simple example,
  * let's say we have a file 'file_template' with the following text:
  * hello
- * //@0
- * //@1
- * //@0
+ * @0
+ * @1
+ * @0
  *
  * Now let's say we call expand_file("file_template", "file.c", ["world\n", "foo bar baz\n"]);
  * 

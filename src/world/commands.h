@@ -1,3 +1,6 @@
+#ifndef COMMANDS_H_
+#define COMMANDS_H_
+
 #include "point.h"
 #include "execution_pointer.h"
 typedef enum CommandType {
@@ -15,3 +18,4 @@ typedef struct Command {
 } Command;
 
 void run_command(ExecutionPointer* exec_ptr, Command* command, Grid* grid);
+#endif
