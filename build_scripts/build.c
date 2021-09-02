@@ -141,6 +141,11 @@ found_init:;
             fighter_header_code = append_string(fighter_header_code, function);
             fighter_header_code = append_string(fighter_header_code, ";\n");
 
+            char* fighter_code_include = strdup("#include \"../world/world_interface.h\"");
+            fighter_code_include = append_string(fighter_code_include, fighter_code);
+            free(fighter_code);
+            fighter_code = fighter_code_include;
+
             fighter_code = append_string(fighter_code, function);
             fighter_code = append_string(fighter_code, "{\n");
             char* real_function_call = strfmt("    %s();\n", void_functions[j]);

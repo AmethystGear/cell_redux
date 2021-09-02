@@ -15,9 +15,20 @@ Grid* init_grid() {
     Grid* grid = malloc(sizeof(Grid));
     for (uint32_t i = 0; i < num_cells_in_grid(); i++) {
         grid->arr[i].data = NULL;
-        grid->arr[i].program_name = NULL;
+        grid->arr[i].function_name = NULL;
     }
     return grid;
+}
+
+Grid* copy_grid(Grid* grid) {
+    Grid* grid_copy = malloc(sizeof(Grid));
+    for (uint32_t i = 0; i < num_cells_in_grid(); i++) {
+        grid_copy->arr[i].data = malloc(grid->arr[i].num_bytes);
+        grid_copy->arr[i].num_bytes = grid->arr[i].num_bytes;
+        memcpy(grid_copy->arr[i].data, grid->arr[i].data, grid->arr[i].num_bytes);
+        grid_copy->arr[i].function_name = grid->arr[i].function_name;
+    }
+    return grid_copy;
 }
 
 /**
@@ -34,9 +45,10 @@ Cell* get_cell_at(Grid* grid, Point point) {
  */
 void free_grid(Grid* grid) {
     // NOTE: we only free the Cell's 'data' field because
-    // the program_name field is always in stack memory
+    // the program_name field is in static memory
     for (uint32_t i = 0; i < num_cells_in_grid(); i++) {
         free(grid->arr[i].data);
+        free(grid->arr[i].function_name);
     }
     free(grid);
 }
