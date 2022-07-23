@@ -1,0 +1,70 @@
+@0
+#include <string.h>
+#include "../world/stats.h"
+#include "../utility/utils.h"
+#include "fighter_interface.h"
+
+typedef void (*CellReduxFunction)();
+
+typedef struct FunctionNameToCellReduxFunction {
+    char* function_name;
+    CellReduxFunction cell_redux_fn;
+} FunctionNameToCellReduxFunction;
+
+typedef struct FighterNameToStats {
+    char* fighter_name;
+    Stats* stats;
+} FighterNameToStats;
+
+FunctionNameToCellReduxFunction function_mapping[] = {
+@1
+};
+
+char* fighters[] = {
+@2
+};
+
+FighterNameToStats stats_mapping[] = {
+@3
+};
+
+void call_function_with_name(char* name) {
+    for (int i = 0; i < ARRAY_LEN(function_mapping); i++) {
+        if (strcmp(function_mapping[i].function_name, name) == 0) {
+            function_mapping[i].cell_redux_fn();
+            return;
+        }
+    }
+    fail_on(ERR(FUNCTION_DOES_NOT_EXIST));
+}
+
+int get_function_index(char* name) {
+    for (int i = 0; i < ARRAY_LEN(function_mapping); i++) {
+        if (strcmp(function_mapping[i].function_name, name) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+char* get_function(int index) {
+    return function_mapping[index].function_name;
+}
+
+int num_functions() {
+    return ARRAY_LEN(function_mapping);
+}
+
+Stats get_fighter_stats(char* fighter_name) {
+    for (int i = 0; i < ARRAY_LEN(stats_mapping); i++) {
+        if (strcmp(stats_mapping[i].fighter_name, fighter_name) == 0) {
+            return *stats_mapping[i].stats;
+        }
+    }
+    fail_on(ERR(strdup("invalid fighter name")));
+}
+
+char** get_fighters(int* len) {
+    *len = ARRAY_LEN(fighters);
+    return fighters;
+}

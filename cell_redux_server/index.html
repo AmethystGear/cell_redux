@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<canvas id="grid" width="700" height="700"></canvas>
+<button onclick="next_frame()">next</button>
+<button onclick="prev_frame()">prev</button>
+<button onclick="forward()">forward</button>
+<button onclick="fastforward()">fastforward</button>
+<button onclick="backward()">backward</button>
+<button onclick="fastbackward()">fastbackward</button>
+<button onclick="stop()">stop</button>
+
+<script>
+let grid_thickness = 2
+let colors = ['white', 'red', 'green', 'blue', 'yellow', 'pink', 'purple', 'cyan', 'darkgreen']
+let base = '@'.charCodeAt(0)
+let canvas_size = 640
+
+let battle_data = null
+let function_names = null
+let grid_size = null
+let num_fighters = null
+let iterations = null
+let grid = []
+let reverse = []
+let markers = []
+let marker_size = 5
+
+let c = document.getElementById("grid");
+let ctx = c.getContext("2d");
+
+
+function drawCircle(ctx, x, y, radius, fill, stroke, strokeWidth) {
+  ctx.beginPath()
+  ctx.arc(x, y, radius, 0, 2 * Math.PI, false)
+  if (fill) {
+    ctx.fillStyle = fill
+    ctx.fill()
+  }
+  if (stroke) {
+    ctx.lineWidth = strokeWidth
+    ctx.strokeStyle = stroke
+    ctx.stroke()
+  }
+}
+
+let iteration = 0
+function display_simulation() {
+    ctx.clearRect(0, 0, 700, 700)
+    let square_len = canvas_size / grid_size
+    for (let y = 0; y < grid_size; y++) {
+        for (let x = 0; x < grid_size; x++) {
+            let color = colors[grid[y][x]]
+            if (most_recent !== null && x === most_recent[0] && y === most_recent[1]) {
+                ctx.fillStyle = "white";
+            } else {
+                ctx.fillStyle = "grey";
+            }
+            ctx.fillRect(square_len * x, square_len * y, square_len, square_len)
+            ctx.fillStyle = color
+            ctx.fillRect(square_len * x + grid_thickness, square_len * y + grid_thickness, square_len - 2 * grid_thickness, square_len - 2 * grid_thickness)
+        }
+    }
+    ctx.fillStyle = "black";
+    ctx.font = '20px serif'
+    ctx.fillText(iteration + "/" + iterations, 0, canvas_size + 25)
+
+    for (let i = 0; i < markers.length; i++) {
+        let x = markers[i][0]
+        let y = markers[i][1]
+        drawCircle(ctx, x * square_len + square_len / 2, y * square_len + square_len / 2, marker_size, 'black', 'black', 1)
+    }
+}
+
+fetch('battle_metadata')
+  .then(response => response.text())
+  .then(text => {
+    let metadata = text.split(" ")
+    grid_size = parseInt(metadata.shift())
+    num_fighters = parseInt(metadata.shift())
+    function_names = metadata
+    fetch('battle_data')
+        .then(response => response.text())
+        .then(text => {
+            battle_data = text
+            iterations = battle_data.length / 6
+            for (let i = 0; i < grid_size; i++) {
+                let arr = []
+                for (let j = 0; j < grid_size; j++) {
+                    arr.push(0)
+                }
+                grid.push(arr)
+            }
+            for (let i = 0; i < num_fighters; i++) {
+                markers.push([0, 0])
+            }
+            window.requestAnimationFrame(render)
+        })
+  })
+
+
+let most_recent = null
+function next_frame() {
+    if (iteration > iterations - 1) {
+        iteration = iterations - 1
+    }
+    let function_change = battle_data[iteration * 6].charCodeAt(0) - '@'.charCodeAt(0)
+    let x = battle_data[iteration * 6 + 1].charCodeAt(0) - '!'.charCodeAt(0)
+    let y = battle_data[iteration * 6 + 2].charCodeAt(0) - '!'.charCodeAt(0)
+
+    let marker_id = battle_data[iteration * 6 + 3].charCodeAt(0) - 'A'.charCodeAt(0)
+    let mx = battle_data[iteration * 6 + 4].charCodeAt(0) - '!'.charCodeAt(0)
+    let my = battle_data[iteration * 6 + 5].charCodeAt(0) - '!'.charCodeAt(0)
+    if (iteration == reverse.length) {
+        reverse.push([x, y, grid[y][x], markers[marker_id][0], markers[marker_id][1], marker_id])
+    }
+    markers[marker_id] = [mx, my]
+    grid[y][x] = function_change;
+    if (iteration < iterations - 1) {
+        iteration++
+    }
+    most_recent = [x, y]
+}
+
+function prev_frame() {
+    if (iteration <= 1) {
+        iteration = 0
+        return
+    }
+    let undo = reverse[iteration - 1]
+    let x = undo[0]
+    let y = undo[1]
+    grid[y][x] = undo[2]
+    markers[undo[5]] = [undo[3], undo[4]]
+    if (iteration > 0) {
+        iteration--;
+    }
+    most_recent = [x, y]
+}
+
+let frame_rate = 0
+function forward() {
+    frame_rate = 1
+}
+
+function fastforward() {
+    frame_rate = 5
+}
+
+function stop() {
+    frame_rate = 0
+}
+
+function backward() {
+    frame_rate = -1
+}
+
+function fastbackward() {
+    frame_rate = -5
+}
+
+function render() {
+    for (let i = 0; i < frame_rate; i++) {
+        next_frame()
+    }
+    for (let i = 0; i < -frame_rate; i++) {
+        prev_frame()
+    }
+    display_simulation()
+    window.requestAnimationFrame(render)
+}
+</script>
